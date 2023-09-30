@@ -1,0 +1,9 @@
+My first mod, originally intended to be a test.
+
+Adds a custom Last Prism variant that summons 5 orbiting prisms that rougly converge around the cursor in a helix pattern. Each prism fires off a purple Last Prism beam, as well as random vanilla laser projectiles with increased damage and speed. Hold the cursor on the player for a pentagram pinwheel that spans the whole screen!
+
+As strong a weapon it is for early and mid game with its base damage of 1, by far the weapon's biggest strength is its ability to shred every enemy imaginable, all the way through not only late game, but every enemy and boss in every mod. The fully charged beams gain a dark energy centre which can penetrate through anything and everything. No matter how high the foe's HP is, no matter how high the defense, regen or DR, even invulnerability frames and invincibility status does not protect an enemy from the Psychedelic Prism's destructive capability.
+
+This mod is not designed to be particularly balanced in any respect. Its purpose is to be used for fun, or for those pesky bosses in some mods that are just too difficult to beat. It's weaker against weaker enemies, and gets stronger against stronger enemies. When fully charged, this weapon is able to wipe out any boss, including invincible ones, and does so at a satisfying, but intentionally not instant, pace. Deals knockback to all enemies including worms and bosses, weakens and destroys enemy projectiles countering with a shower of homing and star projectiles, and killing an enemy with it grants a plethora of buffs to the user.
+
+Patch notes have now been properly moved to the Change Notes section. See https://steamcommunity.com/sharedfiles/filedetails/changelog/2708421997 for the full list.

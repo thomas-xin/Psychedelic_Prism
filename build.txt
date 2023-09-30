@@ -1,0 +1,4 @@
+displayName = PsychedelicPrism
+author = txin
+version = 0.6.0
+hideCode = false
