@@ -284,10 +284,9 @@ namespace Psychedelic_Prism.Projectiles
 								player.ApplyDamageToNPC(npc, dmg, 0f, 0, true);
 							}
 							npc.defense = def;
-							int dmg2 = origLife - npc.life;
-							dmg -= dmg2;
+							dmg = origLife - npc.life;
 						}
-						if (dmg > 0) OnHitNPC(npc, dmg, 0f, true);
+						OnHitNPC(npc, dmg, 0f, true);
 					}
 				}
 			}
@@ -654,7 +653,7 @@ namespace Psychedelic_Prism.Projectiles
 		public void OnHitNPC(NPC target, int damage, float knockback, bool crit) {
 			Player player = Main.player[Projectile.owner];
 			double dealt = damage;
-			double r1 = 262143.0 / 262144;
+			double r1 = 524287.0 / 524288;
 			double r2 = 1;
 			Projectile hostPrism = Main.projectile[(int) HostPrismIndex];
 			float chargeRatio = MathHelper.Clamp(hostPrism.ai[0] / PsychedelicPrismMain.MaxCharge, 0f, 1f);
@@ -695,7 +694,7 @@ namespace Psychedelic_Prism.Projectiles
 						target.life = nextLife;
 					}
 				}
-				r1 = 131071.0 / 131072;
+				r1 = 262143.0 / 262144;
 				r2 = 2097151.0 / 2097152;
 				double lifeR = (target.life * Math.Pow(r1, (1 - InnerBeamBrightnessMultiplier) * DM));
 				if (lifeR % 1 > Main.rand.NextFloat()) lifeR += 1;
