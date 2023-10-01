@@ -330,7 +330,7 @@ namespace Psychedelic_Prism.Projectiles
 									double angle = Math.PI * Main.rand.Next(0, 360) / 180;
 									Vector2 polar = new Vector2((float) Math.Cos(angle), (float) Math.Sin(angle)) * 12f;
 									proj.SetDefaults(proj.type);
-									int[] choices = new int[] { 12, 79, 297, 462, 538, 709, 931 };
+									int[] choices = new int[] { 9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955 };
 									int pid = choices[Main.rand.Next(0, choices.Length)];
 									int dmg2 = proj.damage * proj.width * proj.height / 16 + 1;
 									if (pid == 79) polar *= 3f;
@@ -866,7 +866,7 @@ namespace Psychedelic_Prism.Projectiles
 
 		public override void OnHitPlayer(Player target, Player.HurtInfo info) {
 			int damage = info.Damage;
-			bool crit = false;
+			// bool crit = false;
 			Player player = Main.player[Projectile.owner];
 			if (damage <= 0) {
 				target.KillMe(null, 1, 1, true);

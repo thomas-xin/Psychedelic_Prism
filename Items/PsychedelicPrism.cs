@@ -31,7 +31,7 @@ namespace Psychedelic_Prism.Items
 			Item.CloneDefaults(ItemID.LastPrism);
 			Item.damage = 1;
 			Item.crit = 96;
-			Item.mana = 1;
+			Item.mana = 400;
 			Item.useTime = 1;
 			Item.useAnimation = 1;
 			Item.shoot = ModContent.ProjectileType<PsychedelicPrismMain>();
@@ -85,13 +85,16 @@ namespace Psychedelic_Prism.Items
 
 		private void forceSpawnProjectile(int count) {
 			int i = 0;
+			int j = 0;
 			while (i < count) {
 				int x = Main.rand.Next(0, Main.projectile.Length);
 				Projectile proj = Main.projectile[x];
-				if (proj.type != ModContent.ProjectileType<PsychedelicPrismMain>() && proj.type != ModContent.ProjectileType<PsychedelicPrismBeam>()) {
+				if (proj.type != ModContent.ProjectileType<PsychedelicPrismMain>() && proj.type != ModContent.ProjectileType<PsychedelicPrismBeam>() || j >= Main.projectile.Length) {
+					proj.Kill();
 					proj.active = false;
 					i++;
 				}
+				j++;
 			}
 		}
 

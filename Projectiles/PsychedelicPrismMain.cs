@@ -193,13 +193,13 @@ namespace Psychedelic_Prism.Projectiles
 				float bulletSpeed = 16f;
 				if (player.HasMinionAttackTargetNPC) {
 					NPC npc = Main.npc[player.MinionAttackTargetNPC];
-					if (Collision.CanHitLine(Projectile.Center, Projectile.width, Projectile.height, npc.Center, npc.width, npc.height)) {
+					if (Collision.CanHitLine(Projectile.position, Projectile.width, Projectile.height, npc.position, npc.width, npc.height)) {
 						targetDist = distance = Vector2.Distance(Projectile.Center, targetPos);
 						targetPos = npc.Center;
 						targetNPC = npc;
 						target = true;
 						double dmg = (int) (512 * (1 + npc.velocity.Length()) * (npc.life + npc.lifeMax) / Math.Pow(npc.width * npc.height, 1.5) + 1);
-						if (npc.boss) dmg = dmg / 8;
+						if (npc.boss) dmg /= 8;
 						if (damage < dmg) damage = dmg;
 					}
 				}
@@ -208,13 +208,13 @@ namespace Psychedelic_Prism.Projectiles
 						NPC npc = Main.npc[k];
 						if (npc.CanBeChasedBy(this, false)) {
 							distance = Vector2.Distance(npc.Center, Projectile.Center);
-							if ((Main.rand.Next(0, 5) == 0 || !target) && distance < targetDist && Collision.CanHitLine(Projectile.Center, Projectile.width, Projectile.height, npc.Center, npc.width, npc.height)) {
+							if ((Main.rand.Next(0, 5) == 0 || !target) && distance < targetDist && Collision.CanHitLine(Projectile.position, Projectile.width, Projectile.height, npc.position, npc.width, npc.height)) {
 								targetDist = distance;
 								targetPos = npc.Center;
 								targetNPC = npc;
 								target = true;
 								double dmg = (int) (512 * (1 + npc.velocity.Length()) * (npc.life + npc.lifeMax) / Math.Pow(npc.width * npc.height, 1.5) + 1);
-								if (npc.boss) dmg = dmg / 8;
+								if (npc.boss) dmg /= 8;
 								if (damage < dmg) damage = dmg;
 							}
 						}
@@ -242,7 +242,7 @@ namespace Psychedelic_Prism.Projectiles
 						BC.Normalize();
 						BC *= (float) lengthBC / 2;
 						C = B + BC;
-						if (C.HasNaNs() || !Collision.CanHitLine(Projectile.Center, Projectile.width, Projectile.height, C, targetNPC.width, targetNPC.height)) {
+						if (C.HasNaNs() || !Collision.CanHitLine(Projectile.position, Projectile.width, Projectile.height, C, targetNPC.width, targetNPC.height)) {
 							C = B;
 						}
 					}
@@ -279,7 +279,7 @@ namespace Psychedelic_Prism.Projectiles
 			// Slightly re-aim the Prism every frame so that it gradually sweeps to point towards the mouse.
 			UpdateAim(rrp, player.HeldItem.shootSpeed);
 
-			bool manaIsAvailable = true;
+			// bool manaIsAvailable = true;
 			player.statMana += 1;
 
 			// This ensures that the Prism never times out while in use.
@@ -301,13 +301,16 @@ namespace Psychedelic_Prism.Projectiles
 
 		private void forceSpawnProjectile(int count) {
 			int i = 0;
+			int j = 0;
 			while (i < count) {
 				int x = Main.rand.Next(0, Main.projectile.Length);
 				Projectile proj = Main.projectile[x];
-				if (proj.type != ModContent.ProjectileType<PsychedelicPrismMain>() && proj.type != ModContent.ProjectileType<PsychedelicPrismBeam>()) {
+				if (proj.type != ModContent.ProjectileType<PsychedelicPrismMain>() && proj.type != ModContent.ProjectileType<PsychedelicPrismBeam>() || j >= Main.projectile.Length) {
+					proj.Kill();
 					proj.active = false;
 					i++;
 				}
+				j++;
 			}
 		}
 
@@ -413,7 +416,6 @@ namespace Psychedelic_Prism.Projectiles
 			IEntitySource source = Projectile.GetSource_FromThis();
 			int damage = Projectile.damage;
 			float knockback = Projectile.knockBack;
-			int pid;
 			if (noSpawnProjectile(5)) {
 				forceSpawnProjectile(5);
 			}
@@ -445,7 +447,6 @@ namespace Psychedelic_Prism.Projectiles
 			int uuid = Projectile.GetByUUID(Projectile.owner, Projectile.whoAmI);
 			int damage = Projectile.damage;
 			float knockback = Projectile.knockBack;
-			int pid;
 			for (int b = 0; b < NumBeams; ++b) {
 				Projectile beam = Main.projectile[BeamIDs[b]];
 				if (beam.type == ModContent.ProjectileType<PsychedelicPrismBeam>()) {
