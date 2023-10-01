@@ -182,9 +182,9 @@ namespace Psychedelic_Prism.Projectiles
 			}
 			float req = (float) FrameCounter / 240f / 5f;
 			if (req > 0.4f) req = 0.4f;
-			if ((prism.State & 2) != 0 && Main.rand.NextFloat() < req && !noSpawnProjectile(256)) {
+			if ((prism.State & 2) != 0 && Main.rand.NextFloat() < req && !NoSpawnProjectile(256)) {
 				Vector2 targetPos = rrp;
-				Vector2 targetVel = new Vector2(0, 0);
+				Vector2 targetVel = new(0, 0);
 				float targetDist = 2400f;
 				float distance;
 				bool target = false;
@@ -250,7 +250,7 @@ namespace Psychedelic_Prism.Projectiles
 					polar.Normalize();
 					polar *= bulletSpeed;
 					IEntitySource source = Projectile.GetSource_FromThis();
-					int[] choices = new int[] { 14, 20, 36, 83, 84, 88, 89, 100, 104, 110, 180, 207, 242, 257, 264, 279, 283, 284, 285, 286, 287, 302, 337, 357, 389, 436, 438, 440, 449, 462, 576, 577, 591, 592, 606, 638, 731, 876, 981 };
+					int[] choices = {14, 20, 36, 83, 84, 88, 89, 100, 104, 110, 180, 207, 242, 257, 264, 279, 283, 284, 285, 286, 287, 302, 337, 357, 389, 436, 438, 440, 449, 462, 576, 577, 591, 592, 606, 638, 731, 876, 981};
 					int pid = choices[Main.rand.Next(0, choices.Length)];
 					pid = Projectile.NewProjectile(source, rrp, polar, pid, dmg2, Projectile.knockBack * -2, player.whoAmI);
 					Projectile newproj = Main.projectile[pid];
@@ -259,7 +259,7 @@ namespace Psychedelic_Prism.Projectiles
 					newproj.friendly = true;
 					newproj.hostile = false;
 					if (Main.rand.Next(0, 3) == 0) {
-						SoundStyle[] choices2 = new SoundStyle[] {
+						SoundStyle[] choices2 = {
 							SoundID.Item12,
 							SoundID.Item25,
 							SoundID.Item75,
@@ -270,7 +270,7 @@ namespace Psychedelic_Prism.Projectiles
 							SoundID.Item158
 						};
 						SoundStyle sid = choices2[Main.rand.Next(0, choices2.Length)];
-						Vector2 attenuated = new Vector2(player.position.X, player.position.Y - 2400);
+						Vector2 attenuated = new(player.position.X, player.position.Y - 2400);
 						SoundEngine.PlaySound(sid, attenuated);
 					}
 				}
@@ -289,7 +289,7 @@ namespace Psychedelic_Prism.Projectiles
 			return false;
 		}
 
-		private bool noSpawnProjectile(int lim) {
+		private bool NoSpawnProjectile(int lim) {
 			int count = 0;
 			for (int k = 0; k < Main.projectile.Length; k++) {
 				if (Main.projectile[k] == null) continue;
@@ -301,7 +301,7 @@ namespace Psychedelic_Prism.Projectiles
 			return false;
 		}
 
-		private void forceSpawnProjectile(int count) {
+		private void ForceSpawnProjectile(int count) {
 			int i = 0;
 			int j = 0;
 			while (i < count) {
@@ -367,7 +367,7 @@ namespace Psychedelic_Prism.Projectiles
 				currentExpansion += 1;
 			}
 			float currDist = 120 * currentExpansion * currentExpansion / 32400;
-			Vector2 un_offset = new Vector2((float) (player.HeldItem.shootSpeed * Math.Cos(Projectile.rotation - MathHelper.PiOver2)), (float) (player.HeldItem.shootSpeed * Math.Sin(Projectile.rotation - MathHelper.PiOver2)));
+			Vector2 un_offset = new((float) (player.HeldItem.shootSpeed * Math.Cos(Projectile.rotation - MathHelper.PiOver2)), (float) (player.HeldItem.shootSpeed * Math.Sin(Projectile.rotation - MathHelper.PiOver2)));
 			Projectile.Center = player.MountedCenter + new Vector2((float) (currDist * Math.Cos(rotAngle)), (float) (currDist * Math.Sin(rotAngle))) - un_offset;
 		}
 
@@ -418,8 +418,8 @@ namespace Psychedelic_Prism.Projectiles
 			IEntitySource source = Projectile.GetSource_FromThis();
 			int damage = Projectile.damage;
 			float knockback = Projectile.knockBack;
-			if (noSpawnProjectile(5)) {
-				forceSpawnProjectile(5);
+			if (NoSpawnProjectile(5)) {
+				ForceSpawnProjectile(5);
 			}
 			for (int b = 0; b < NumBeams; ++b) {
 				int x = (int) (b + currentRotation * NumBeams / Math.PI / 2) % NumBeams;
@@ -456,8 +456,8 @@ namespace Psychedelic_Prism.Projectiles
 					if (realBeam.Fading) beam.active = false;
 				}
 				if (beam == null || beam.type != ModContent.ProjectileType<PsychedelicPrismBeam>() || !beam.active) {
-					if (noSpawnProjectile(1)) {
-						forceSpawnProjectile(1);
+					if (NoSpawnProjectile(1)) {
+						ForceSpawnProjectile(1);
 					}
 					IEntitySource source = Projectile.GetSource_FromThis();
 					int x = (int) (b + currentRotation * NumBeams / Math.PI / 2) % NumBeams;

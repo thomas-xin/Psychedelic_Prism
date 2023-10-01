@@ -71,7 +71,7 @@ namespace Psychedelic_Prism.Items
 				.Register();
 		}
 
-		private bool noSpawnProjectile(int lim) {
+		private bool NoSpawnProjectile(int lim) {
 			int count = 0;
 			for (int k = 0; k < Main.projectile.Length; k++) {
 				if (Main.projectile[k] == null) continue;
@@ -83,7 +83,7 @@ namespace Psychedelic_Prism.Items
 			return false;
 		}
 
-		private void forceSpawnProjectile(int count) {
+		private void ForceSpawnProjectile(int count) {
 			int i = 0;
 			int j = 0;
 			while (i < count) {
@@ -154,8 +154,8 @@ namespace Psychedelic_Prism.Items
 			for (int i = 0; i < Main.npc.Length; i++) {
 				NPCHealths[i] = -1;
 			}
-			if (noSpawnProjectile(5)) {
-				forceSpawnProjectile(5);
+			if (NoSpawnProjectile(5)) {
+				ForceSpawnProjectile(5);
 			}
 			for (int i = 0; i < Main.projectile.Length; i++) {
 				Projectile proj = Main.projectile[i];

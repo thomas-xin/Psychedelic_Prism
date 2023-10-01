@@ -69,12 +69,12 @@ namespace Psychedelic_Prism.Projectiles
 		private const float BeamColorSaturation = 1f;
 		private const float BeamColorLightness = 0.5f;
 
-		private static readonly int[] Buffs = new int[] { 2, 5, 29, 48, 58, 59, 113, 114, 119, 151, 165, 175, 178, 181, 207, 336 };
-		private static readonly int[] Debuffs = new int[] { 20, 24, 31, 36, 39, 44, 67, 68, 69, 70, 144, 153, 169, 183, 189, 195, 196, 203, 204, 323, 324, 337 };
+		private static readonly int[] Buffs = {2, 5, 29, 48, 58, 59, 113, 114, 119, 151, 165, 175, 178, 181, 207, 336};
+		private static readonly int[] Debuffs = {20, 24, 31, 36, 39, 44, 67, 68, 69, 70, 144, 153, 169, 183, 189, 195, 196, 203, 204, 323, 324, 337};
 
 		private float Fade = 1f;
 		public bool Fading = false;
-		private Color LastColor = new Color(0, 0, 0);
+		private Color LastColor = new(0, 0, 0);
 		private float LastScale = 0f;
 
 		private bool Display = false;
@@ -212,7 +212,7 @@ namespace Psychedelic_Prism.Projectiles
 
 			// This trigonometry calculates where the beam is supposed to be pointing.
 			Vector2 unitRot = Vector2.UnitY.RotatedBy(deviationAngle);
-			Vector2 yVec = new Vector2(4f, beamStartSidewaysOffset);
+			Vector2 yVec = new(4f, beamStartSidewaysOffset);
 			float hostPrismAngle = hostPrism.velocity.ToRotation();
 			Vector2 beamSpanVector = (unitRot * yVec).RotatedBy(hostPrismAngle);
 			float sinusoidYOffset = unitRot.Y * MathHelper.Pi / psyPrism.NumBeams * beamSpread;
@@ -238,7 +238,7 @@ namespace Psychedelic_Prism.Projectiles
 			BeamLength = MathHelper.Lerp(BeamLength, hitscanBeamLength, BeamLengthChangeFactor);
 
 			// This Vector2 stores the beam's hitbox statistics. X = beam length. Y = beam width.
-			Vector2 beamDims = new Vector2(Projectile.velocity.Length() * BeamLength, Projectile.width * Projectile.scale);
+			Vector2 beamDims = new(Projectile.velocity.Length() * BeamLength, Projectile.width * Projectile.scale);
 
 			// Only produce dust and cause water ripples if the beam is above a certain charge level.
 			if (chargeRatio >= VisualEffectThreshold)
@@ -255,7 +255,7 @@ namespace Psychedelic_Prism.Projectiles
 
 			DelegateMethods.v3_1 = beamColor.ToVector3() * BeamLightBrightness * chargeRatio * (16 - InnerBeamBrightnessMultiplier * 15) / 16;
 			Utils.PlotTileLine(Projectile.Center, Projectile.Center + Projectile.velocity * BeamLength, beamDims.Y, DelegateMethods.CastLight);
-			Rectangle projHitbox = new Rectangle((int) Projectile.Center.X, (int) Projectile.Center.Y, Projectile.width * 5 >> 3, Projectile.height * 5 >> 3);
+			Rectangle projHitbox = new((int) Projectile.Center.X, (int) Projectile.Center.Y, Projectile.width * 5 >> 3, Projectile.height * 5 >> 3);
 			Player player = Main.player[Projectile.owner];
 			for (int k = 0; k < Main.npc.Length; k++) {
 				if (Main.npc[k] == null) continue;
@@ -263,33 +263,37 @@ namespace Psychedelic_Prism.Projectiles
 				if (!npc.active || npc.friendly || ((npc.townNPC || npc.lifeMax <= 3) && npc.damage <= 0)) {
 					continue;
 				}
-				Rectangle targetHitbox = new Rectangle((int) npc.position.X, (int) npc.position.Y, npc.width, npc.height);
+				Rectangle targetHitbox = new((int) npc.position.X, (int) npc.position.Y, npc.width, npc.height);
 				if ((bool) Colliding2(projHitbox, targetHitbox)) {
 					if (InnerBeamBrightnessMultiplier <= 0 || !npc.dontTakeDamage) {
 						int dmg = (int) ((Projectile.damage * (1 - InnerBeamBrightnessMultiplier) + 1) / 2);
 						if (dmg <= 1) dmg = Main.rand.Next(1, 10);
 						int def = npc.defense;
+						int origLife = npc.life;
 						if (dmg * 49132 <= npc.life) {
 							npc.defense = 0;
 							if (npc.immortal || npc.dontTakeDamage) {
-								NPC.HitInfo info = new NPC.HitInfo();
-								info.Crit = true;
-								info.DamageType = DamageClass.Magic;
-								info.Damage = dmg;
-								npc.StrikeNPC(info);
+                                NPC.HitInfo info = new() {
+                                    Crit = true,
+                                    DamageType = DamageClass.Magic,
+                                    Damage = dmg,
+                                };
+                                npc.StrikeNPC(info);
 							}
 							else {
 								player.ApplyDamageToNPC(npc, dmg, 0f, 0, true);
 							}
 							npc.defense = def;
+							int dmg2 = origLife - npc.life;
+							dmg -= dmg2;
 						}
-						OnHitNPC(npc, dmg, 0f, true);
+						if (dmg > 0) OnHitNPC(npc, dmg, 0f, true);
 					}
 				}
 			}
 			if (InnerBeamBrightnessMultiplier < 1) {
 				int spawned = 0;
-				if (noSpawnProjectile(512)) spawned = 6;
+				if (NoSpawnProjectile(512)) spawned = 6;
 				for (int k = 0; k < Main.projectile.Length; k++) {
 					if (Main.projectile[k] == null || Main.rand.NextBool()) continue;
 					Projectile proj = Main.projectile[k];
@@ -299,7 +303,7 @@ namespace Psychedelic_Prism.Projectiles
 					if (proj.type == ModContent.ProjectileType<PsychedelicPrismMain>()) {
 						continue;
 					}
-					Rectangle targetHitbox = new Rectangle((int) proj.position.X, (int) proj.position.Y, proj.width, proj.height);
+					Rectangle targetHitbox = new((int) proj.position.X, (int) proj.position.Y, proj.width, proj.height);
 					if ((bool) Colliding3(projHitbox, targetHitbox)) {
 						if (Vector2.Distance(proj.position, player.MountedCenter) > 144) {
 							int size = proj.width * proj.height;
@@ -330,7 +334,7 @@ namespace Psychedelic_Prism.Projectiles
 									double angle = Math.PI * Main.rand.Next(0, 360) / 180;
 									Vector2 polar = new Vector2((float) Math.Cos(angle), (float) Math.Sin(angle)) * 12f;
 									proj.SetDefaults(proj.type);
-									int[] choices = new int[] { 9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955 };
+									int[] choices = {9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955};
 									int pid = choices[Main.rand.Next(0, choices.Length)];
 									int dmg2 = proj.damage * proj.width * proj.height / 16 + 1;
 									if (pid == 79) polar *= 3f;
@@ -372,7 +376,7 @@ namespace Psychedelic_Prism.Projectiles
 			return false;
 		}
 
-		private bool noSpawnProjectile(int lim) {
+		private bool NoSpawnProjectile(int lim) {
 			int count = 0;
 			for (int k = 0; k < Main.projectile.Length; k++) {
 				if (Main.projectile[k] == null) continue;
@@ -473,7 +477,7 @@ namespace Psychedelic_Prism.Projectiles
 			Texture2D texture = (Texture2D) ModContent.Request<Texture2D>(Texture);
 			// Texture2D texture = Main.projectileTexture[Projectile.type];
 			Vector2 centerFloored = Projectile.Center.Floor() + Projectile.velocity * Projectile.scale * 10.5f;
-			Vector2 drawScale = new Vector2(Projectile.scale);
+			Vector2 drawScale = new(Projectile.scale);
 
 			// Reduce the beam length proportional to its square area to reduce block penetration.
 			float visualBeamLength = BeamLength - 9.5f * Projectile.scale * Projectile.scale;
@@ -547,7 +551,7 @@ namespace Psychedelic_Prism.Projectiles
 			}
 
 			Vector2 centerFloored = Projectile.Center.Floor() + Projectile.velocity * Projectile.scale * 10.5f;
-			Vector2 drawScale = new Vector2(Projectile.scale);
+			Vector2 drawScale = new(Projectile.scale);
 
 			// Reduce the beam length proportional to its square area to reduce block penetration.
 			float visualBeamLength = BeamLength - 9.5f * Projectile.scale * Projectile.scale;
@@ -562,7 +566,7 @@ namespace Psychedelic_Prism.Projectiles
 		}
 
 		private void DrawBeam(Texture2D texture, Vector2 startPosition, Vector2 endPosition, Vector2 drawScale, Color beamColor) {
-			Utils.LaserLineFraming lineFraming = new Utils.LaserLineFraming(DelegateMethods.RainbowLaserDraw);
+			Utils.LaserLineFraming lineFraming = new(DelegateMethods.RainbowLaserDraw);
 
 			// c_1 is an unnamed decompiled variable which is the render color of the beam drawn by DelegateMethods.RainbowLaserDraw.
 			DelegateMethods.c_1 = beamColor;
@@ -590,7 +594,7 @@ namespace Psychedelic_Prism.Projectiles
 		}
 
 		// Inner beams are always pure white so that they act as a "blindingly bright" center to each laser.
-		private Color GetInnerBeamColor() => new Color(InnerBeamBrightnessMultiplier * 1.5f, InnerBeamBrightnessMultiplier, InnerBeamBrightnessMultiplier * 2);
+		private Color GetInnerBeamColor() => new(InnerBeamBrightnessMultiplier * 1.5f, InnerBeamBrightnessMultiplier, InnerBeamBrightnessMultiplier * 2);
 
 		private void ProduceBeamDust(Color beamColor) {
 			// Create one dust per frame a small distance from where the beam ends.
@@ -691,8 +695,8 @@ namespace Psychedelic_Prism.Projectiles
 						target.life = nextLife;
 					}
 				}
-				r1 = 65535.0 / 65536;
-				r2 = 1048575.0 / 1048576;
+				r1 = 131071.0 / 131072;
+				r2 = 2097151.0 / 2097152;
 				double lifeR = (target.life * Math.Pow(r1, (1 - InnerBeamBrightnessMultiplier) * DM));
 				if (lifeR % 1 > Main.rand.NextFloat()) lifeR += 1;
 				int life = (int) lifeR;
@@ -739,24 +743,26 @@ namespace Psychedelic_Prism.Projectiles
 			if (dist2 < 0) dist2 = 0;
 			float knock = 131072f / (dist2 + 32768f) - 0.25f;
 			if (target.immortal || target.dontTakeDamage || target.noTileCollide || dmg == 2147483647) {
-				NPC.HitInfo info = new NPC.HitInfo();
-				info.Crit = true;
-				info.DamageType = DamageClass.Magic;
-				info.Damage = (int) dmg;
-				info.Knockback = 0.4f * knock;
-				info.HitDirection = dir;
-				dealt += target.StrikeNPC(info);
+                NPC.HitInfo info = new() {
+                    Crit = true,
+                    DamageType = DamageClass.Magic,
+                    Damage = (int) dmg,
+                    Knockback = 0.4f * knock,
+                    HitDirection = dir,
+                };
+                dealt += target.StrikeNPC(info);
 			}
 			else {
 				player.ApplyDamageToNPC(target, (int) dmg, 0.5f * knock, dir, Main.rand.NextBool());
 			}
 			if (InnerBeamBrightnessMultiplier <= 0) {
-				if (dmg < 2147483647) dmg -= 1;
-				NPC.HitInfo info = new NPC.HitInfo();
-				info.Crit = true;
-				info.DamageType = DamageClass.Magic;
-				info.Damage = (int) dmg;
-				int d2 = (int) target.StrikeNPC(info);
+				if (dmg < 2147483647) dmg /= 2;
+                NPC.HitInfo info = new() {
+                    Crit = true,
+                    DamageType = DamageClass.Magic,
+                    Damage = (int) dmg,
+                };
+                int d2 = (int) target.StrikeNPC(info);
 					dealt += d2;
 					if (d2 <= 2) {
 						d2 = (int) (dmg - d2);
@@ -799,7 +805,7 @@ namespace Psychedelic_Prism.Projectiles
 						DD2Event.StartVictoryScene();
 					}
 				}
-				if (!noSpawnProjectile(512)) {
+				if (!NoSpawnProjectile(512)) {
 					IEntitySource source = Projectile.GetSource_FromThis();
 					Vector2 targetpos = (target.position - Projectile.position).Length() * Projectile.velocity + Projectile.position;
 					// Vector2 attenuated = new Vector2(player.position.X, player.position.Y);
@@ -807,7 +813,7 @@ namespace Psychedelic_Prism.Projectiles
 					for (int i = 0; i < 8; i++) {
 						double angle = Math.PI * Main.rand.Next(0, 360) / 180;
 						Vector2 polar = new Vector2((float) Math.Cos(angle), (float) Math.Sin(angle)) * 12f;
-						int[] choices = new int[] { 9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955 };
+						int[] choices = {9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955};
 						int pid = choices[Main.rand.Next(0, choices.Length)];
 						int dmg2 = target.lifeMax / 16 + target.defense / 2 + 1;
 						if (pid == 79) polar *= 3f;
@@ -826,13 +832,14 @@ namespace Psychedelic_Prism.Projectiles
 					target.immortal = false;
 					target.life = 0;
 					dealt = target.lifeMax;
-					// target.lifeMax = 1;
-					// target.aiStyle = 2;
-					NPC.HitInfo info = new NPC.HitInfo();
-					info.Crit = true;
-					info.DamageType = DamageClass.Magic;
-					info.Damage = (int) dealt;
-					target.StrikeNPC(info);
+                    // target.lifeMax = 1;
+                    // target.aiStyle = 2;
+                    NPC.HitInfo info = new() {
+                        Crit = true,
+                        DamageType = DamageClass.Magic,
+                        Damage = (int) dealt,
+                    };
+                    target.StrikeNPC(info);
 					target.NPCLoot();
 					target.damage = 0;
 					if (player.HeldItem.type == ModContent.ItemType<PsychedelicPrism>()) {
@@ -889,7 +896,7 @@ namespace Psychedelic_Prism.Projectiles
 				for (int i = 0; i < 8; i++) {
 					double angle = Math.PI * Main.rand.Next(0, 360) / 180;
 					Vector2 polar = new Vector2((float) Math.Cos(angle), (float) Math.Sin(angle)) * 12f;
-					int[] choices = new int[] { 9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955 };
+					int[] choices = {9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955};
 					int pid = choices[Main.rand.Next(0, choices.Length)];
 					int dmg2 = target.statLifeMax * 2 + target.statDefense / 2 + 1;
 					if (pid == 79) polar *= 3f;
