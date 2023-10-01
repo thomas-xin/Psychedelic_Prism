@@ -280,7 +280,9 @@ namespace Psychedelic_Prism.Projectiles
 			UpdateAim(rrp, player.HeldItem.shootSpeed);
 
 			// bool manaIsAvailable = true;
-			player.statMana += 1;
+			float manaOverflow = (float) (player.statManaMax * 2 - player.statMana) / 60 / 5;
+			if (manaOverflow % 1 > Main.rand.NextFloat()) manaOverflow += 1;
+			player.statMana += (int) manaOverflow;
 
 			// This ensures that the Prism never times out while in use.
 			Projectile.timeLeft = 2147483647;

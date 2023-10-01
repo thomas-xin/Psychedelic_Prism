@@ -31,7 +31,7 @@ namespace Psychedelic_Prism.Items
 			Item.CloneDefaults(ItemID.LastPrism);
 			Item.damage = 1;
 			Item.crit = 96;
-			Item.mana = 400;
+			Item.mana = 1;
 			Item.useTime = 1;
 			Item.useAnimation = 1;
 			Item.shoot = ModContent.ProjectileType<PsychedelicPrismMain>();
@@ -148,6 +148,7 @@ namespace Psychedelic_Prism.Items
 					}
 				}
 				SoundEngine.PlaySound(SoundID.Item78, player.position);
+				player.statMana += 32767;
 				return;
 			}
 			for (int i = 0; i < Main.npc.Length; i++) {
@@ -191,6 +192,7 @@ namespace Psychedelic_Prism.Items
 				telegraph.hostile = false;
 			}
 			Array.Sort(PrismIDs);
+			player.statMana = 0;
 			return;
 		}
 	}
