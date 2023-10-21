@@ -56,13 +56,13 @@ namespace Psychedelic_Prism.Items
 				.AddIngredient(1260, 1) // Rainbow Gun
 				.AddIngredient(495, 1) // Rainbow Rod
 				.AddIngredient(4952, 1) // Nightglow
+				.AddIngredient(5335, 1) // Rod of Harmony
 				.AddIngredient(50, 1) // Magic Mirror
-				.AddIngredient(109, 200) // Mana Crystal
+				.AddIngredient(5340, 1) // Galaxy Pearl
+				.AddIngredient(5339, 100) // Arcane Crystal
 				.AddIngredient(3457, 100) // Nebula Fragment
 				.AddIngredient(502, 100) // Crystal Shard
 				.AddIngredient(181, 100) // Amethyst
-				.AddIngredient(528, 20) // Light Shard
-				.AddIngredient(527, 20) // Dark Shard
 				.AddIngredient(3024, 4) // Skiph's Blood
 				.AddTile(26) // Altar
 				.AddTile(125) // Crystal Ball
@@ -164,8 +164,8 @@ namespace Psychedelic_Prism.Items
 					proj.Kill();
 					proj.active = false;
 				} else if (proj.type == ModContent.ProjectileType<PsychedelicPrismBeam>()) {
-					PsychedelicPrismBeam prism = proj.ModProjectile as PsychedelicPrismBeam;
-					prism.Fading = true;
+					PsychedelicPrismBeam beam = proj.ModProjectile as PsychedelicPrismBeam;
+					beam.Fading = true;
 				}
 			}
 			var source = new EntitySource_ItemUse_WithAmmo(player, player.HeldItem, 1);

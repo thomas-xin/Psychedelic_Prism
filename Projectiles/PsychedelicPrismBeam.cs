@@ -135,7 +135,9 @@ namespace Psychedelic_Prism.Projectiles
 				Projectile.scale = MaxBeamScale * LastScale * Fade;
 				// Projectile.Opacity = MathHelper.Lerp(0.05f, 0.6f, LastScale * 1.5f) * (float) Math.Pow(LastScale, 0.5f);
 				DelegateMethods.v3_1 = LastColor.ToVector3() * BeamLightBrightness * (16 - InnerBeamBrightnessMultiplier * 15) / 16 * Fade;
-				Utils.PlotTileLine(Projectile.Center, Projectile.Center + Projectile.velocity * BeamLength, Projectile.width * Projectile.scale, DelegateMethods.CastLight);
+				float currLength = BeamLength;
+				if (currLength > 1024f) currLength = 1024f;
+				Utils.PlotTileLine(Projectile.Center, Projectile.Center + Projectile.velocity * currLength, Projectile.width * Projectile.scale, DelegateMethods.CastLight);
 				Fade -= 0.0625f;
 				return false;
 			}
@@ -143,7 +145,7 @@ namespace Psychedelic_Prism.Projectiles
 			Projectile.maxPenetrate = 2147483647;
 			Color beamColor = GetOuterBeamColor();
 			// If something has gone wrong with either the beam or the host Prism, destroy the beam.
-			Projectile hostPrism = Main.projectile[(int) HostPrismIndex];
+			Projectile hostPrism = Main.projectile[HostPrismIndex];
 			if (Projectile.type != ModContent.ProjectileType<PsychedelicPrismBeam>() || !hostPrism.active || hostPrism.type != ModContent.ProjectileType<PsychedelicPrismMain>()) {
 				Fading = true;
 				return false;
@@ -395,7 +397,7 @@ namespace Psychedelic_Prism.Projectiles
 
 		private float PerformBeamHitscan(Projectile prism, bool fullCharge) {
 			if (InnerBeamBrightnessMultiplier <= 0) return MaxBeamLength;
-			Projectile hostPrism = Main.projectile[(int) HostPrismIndex];
+			Projectile hostPrism = Main.projectile[HostPrismIndex];
 			Player player = Main.player[Projectile.owner];
 			// Hitscan interpolation starts from the second intersection of the secant formed by the beam through
 			// the expanding circle path that the prisms follow. This allows a beam to pass through walls before
@@ -490,7 +492,7 @@ namespace Psychedelic_Prism.Projectiles
 				player = Main.player[Projectile.owner];
 				if (player.HeldItem.type == ModContent.ItemType<PsychedelicPrism>()) {
 					PsychedelicPrism prism = player.HeldItem.ModItem as PsychedelicPrism;
-					PsychedelicPrismMain hostPrism = Main.projectile[(int) HostPrismIndex].ModProjectile as PsychedelicPrismMain;
+					PsychedelicPrismMain hostPrism = Main.projectile[HostPrismIndex].ModProjectile as PsychedelicPrismMain;
 					if (hostPrism.identity == prism.PrismIDs[0]) {
 						if (Projectile.whoAmI == hostPrism.BeamIDs[0]) {
 							for (int i = 0; i < PsychedelicPrism.NumPrisms; i++) {
@@ -573,7 +575,7 @@ namespace Psychedelic_Prism.Projectiles
 		}
 
 		private Color GetOuterBeamColor() {
-			Projectile hostPrism = Main.projectile[(int) HostPrismIndex];
+			Projectile hostPrism = Main.projectile[HostPrismIndex];
 			if (hostPrism == null || Fading) return LastColor;
 			PsychedelicPrismMain psyPrism = hostPrism.ModProjectile as PsychedelicPrismMain;
 			// This hue calculation produces a unique color for each beam based on its Beam ID.
@@ -631,7 +633,7 @@ namespace Psychedelic_Prism.Projectiles
 
 		// Automatically iterates through every tile the laser is overlapping to cut grass at all those locations.
 		public override void CutTiles() {
-			Projectile hostPrism = Main.projectile[(int) HostPrismIndex];
+			Projectile hostPrism = Main.projectile[HostPrismIndex];
 			if (hostPrism == null || Fading) return;
 			float chargeRatio = MathHelper.Clamp(hostPrism.ai[0] / PsychedelicPrismMain.MaxCharge, 0f, 1f);
 			if (chargeRatio >= 1) {
@@ -655,7 +657,7 @@ namespace Psychedelic_Prism.Projectiles
 			double dealt = damage;
 			double r1 = 524287.0 / 524288;
 			double r2 = 1;
-			Projectile hostPrism = Main.projectile[(int) HostPrismIndex];
+			Projectile hostPrism = Main.projectile[HostPrismIndex];
 			float chargeRatio = MathHelper.Clamp(hostPrism.ai[0] / PsychedelicPrismMain.MaxCharge, 0f, 1f);
 			double dmg = 0;
 			float DM = GetDamageMultiplier(chargeRatio);
@@ -713,8 +715,8 @@ namespace Psychedelic_Prism.Projectiles
 				}
 			}
 			if (dmg <= 0) {
-				dmg = ((double) target.life * (1 - Math.Pow(r1, DM)));
-				dmg += ((double) target.lifeMax * (1 - Math.Pow(r2, DM)));
+				dmg = (target.life * (1 - Math.Pow(r1, DM)));
+				dmg += (target.lifeMax * (1 - Math.Pow(r2, DM)));
 			}
 			dmg *= player.GetDamage(DamageClass.Magic).Multiplicative;
 			if (player.luck > 0) {
@@ -761,7 +763,7 @@ namespace Psychedelic_Prism.Projectiles
                     DamageType = DamageClass.Magic,
                     Damage = (int) dmg,
                 };
-                int d2 = (int) target.StrikeNPC(info);
+                int d2 = target.StrikeNPC(info);
 					dealt += d2;
 					if (d2 <= 2) {
 						d2 = (int) (dmg - d2);
@@ -879,7 +881,7 @@ namespace Psychedelic_Prism.Projectiles
 				return;
 			}
 			if (InnerBeamBrightnessMultiplier < 1) {
-				Projectile hostPrism = Main.projectile[(int) HostPrismIndex];
+				Projectile hostPrism = Main.projectile[HostPrismIndex];
 				float chargeRatio = MathHelper.Clamp(hostPrism.ai[0] / PsychedelicPrismMain.MaxCharge, 0f, 1f);
 				int life = (int) (target.statLife * Math.Pow(2730.0 / 2731, (1 - InnerBeamBrightnessMultiplier) * GetDamageMultiplier(chargeRatio)));
 				target.statLife = life;

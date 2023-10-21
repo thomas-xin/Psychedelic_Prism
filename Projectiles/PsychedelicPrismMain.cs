@@ -193,7 +193,7 @@ namespace Psychedelic_Prism.Projectiles
 				float bulletSpeed = 16f;
 				if (player.HasMinionAttackTargetNPC) {
 					NPC npc = Main.npc[player.MinionAttackTargetNPC];
-					if (Collision.CanHitLine(Projectile.position, Projectile.width, Projectile.height, npc.position, npc.width, npc.height)) {
+					if (Collision.CanHitLine(Projectile.position, Projectile.width / 2, Projectile.height / 2, npc.position, npc.width / 2, npc.height / 2)) {
 						targetDist = distance = Vector2.Distance(Projectile.Center, targetPos);
 						targetPos = npc.Center;
 						targetNPC = npc;
@@ -242,7 +242,7 @@ namespace Psychedelic_Prism.Projectiles
 						BC.Normalize();
 						BC *= (float) lengthBC / 2;
 						C = B + BC;
-						if (C.HasNaNs() || !Collision.CanHitLine(Projectile.position, Projectile.width, Projectile.height, C, targetNPC.width, targetNPC.height)) {
+						if (C.HasNaNs() || !Collision.CanHitLine(Projectile.position, Projectile.width / 2, Projectile.height / 2, C, targetNPC.width / 2, targetNPC.height / 2)) {
 							C = B;
 						}
 					}
