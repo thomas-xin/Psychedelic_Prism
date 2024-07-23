@@ -1,10 +1,11 @@
 Items: {
 	PsychedelicPrism: {
-		DisplayName: Psychedelic Prism 2
+		DisplayName: Psychedelic Prism
 		Tooltip:
 			'''
 			The weakest weapon (?)
-			[c/000000:Fire beams of pure psychic energy, scaling in power to overwhelm the most obstinate of foes, to universe-shattering levels.]
+			[c/3F003F:Fire beams of pure psychic energy, scaling in power to overwhelm the most obstinate of foes, to universe-shattering levels]
+			[c/FF7F00:Counts as both Magic and Summon damage class]
 			'''
 	}
 }
@@ -17,27 +18,13 @@ Projectiles: {
 Prism: {
 	Items: {
 		PsychedelicPrism: {
-			DisplayName: {
-				$parentVal: Psychedelic Prism
-			}
-
-			Tooltip: {
-				$parentVal: ""
-			}
+			DisplayName: Psychedelic Prism
+			Tooltip: ""
 		}
 	}
 
 	Projectiles: {
-		PsychedelicPrismBeam: {
-			DisplayName: {
-				$parentVal: Psychedelic Prism Beam
-			}
-		}
-
-		PsychedelicPrismMain: {
-			DisplayName: {
-				$parentVal: Psychedelic Prism Main
-			}
-		}
+		PsychedelicPrismBeam.DisplayName: Psychedelic Prism Beam
+		PsychedelicPrismMain.DisplayName: Psychedelic Prism Main
 	}
 }

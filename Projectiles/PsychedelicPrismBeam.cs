@@ -101,7 +101,7 @@ namespace Psychedelic_Prism.Projectiles
 		public override void SetDefaults() {
 			Projectile.width = 18;
 			Projectile.height = 18;
-			Projectile.DamageType = DamageClass.Magic;
+			Projectile.DamageType = DamageClass.Summon;
 			Projectile.maxPenetrate = 2147483646;
 			Projectile.penetrate = -1;
 			Projectile.alpha = 255;
@@ -257,118 +257,135 @@ namespace Psychedelic_Prism.Projectiles
 
 			DelegateMethods.v3_1 = beamColor.ToVector3() * BeamLightBrightness * chargeRatio * (16 - InnerBeamBrightnessMultiplier * 15) / 16;
 			Utils.PlotTileLine(Projectile.Center, Projectile.Center + Projectile.velocity * BeamLength, beamDims.Y, DelegateMethods.CastLight);
-			Rectangle projHitbox = new((int) Projectile.Center.X, (int) Projectile.Center.Y, Projectile.width * 5 >> 3, Projectile.height * 5 >> 3);
+
+			bool isActive = InnerBeamBrightnessMultiplier > -1;
 			Player player = Main.player[Projectile.owner];
-			for (int k = 0; k < Main.npc.Length; k++) {
-				if (Main.npc[k] == null) continue;
-				NPC npc = Main.npc[k];
-				if (!npc.active || npc.friendly || ((npc.townNPC || npc.lifeMax <= 3) && npc.damage <= 0)) {
-					continue;
-				}
-				Rectangle targetHitbox = new((int) npc.position.X, (int) npc.position.Y, npc.width, npc.height);
-				if ((bool) Colliding2(projHitbox, targetHitbox)) {
-					if (InnerBeamBrightnessMultiplier <= 0 || !npc.dontTakeDamage) {
-						int dmg = (int) ((Projectile.damage * (1 - InnerBeamBrightnessMultiplier) + 1) / 2);
-						if (dmg <= 1) dmg = Main.rand.Next(1, 10);
-						int def = npc.defense;
-						int origLife = npc.life;
-						if (dmg * 49132 <= npc.life) {
-							npc.defense = 0;
-							if (npc.immortal || npc.dontTakeDamage) {
-                                NPC.HitInfo info = new() {
-                                    Crit = true,
-                                    DamageType = DamageClass.Magic,
-                                    Damage = dmg,
-                                };
-                                npc.StrikeNPC(info);
-							}
-							else {
-								player.ApplyDamageToNPC(npc, dmg, 0f, 0, true);
-							}
-							npc.defense = def;
-							dmg = origLife - npc.life;
-						}
-						OnHitNPC(npc, dmg, 0f, true);
+			if (player.HeldItem.type == ModContent.ItemType<PsychedelicPrism>()) {
+				PsychedelicPrism prism = player.HeldItem.ModItem as PsychedelicPrism;
+				PsychedelicPrismMain hostPrismMain = Main.projectile[HostPrismIndex].ModProjectile as PsychedelicPrismMain;
+				if (hostPrismMain.identity == prism.PrismIDs[0]) {
+					if (Projectile.whoAmI == hostPrismMain.BeamIDs[0]) {
+						isActive = true;
 					}
 				}
 			}
-			if (InnerBeamBrightnessMultiplier < 1) {
-				int spawned = 0;
-				if (NoSpawnProjectile(512)) spawned = 6;
-				for (int k = 0; k < Main.projectile.Length; k++) {
-					if (Main.projectile[k] == null || Main.rand.NextBool()) continue;
-					Projectile proj = Main.projectile[k];
-					if (!proj.active || (proj.friendly && !proj.hostile)) {
+			if (isActive) {
+				Rectangle projHitbox = new((int) Projectile.Center.X, (int) Projectile.Center.Y, Projectile.width * 5 >> 3, Projectile.height * 5 >> 3);
+				for (int k = 0; k < Main.npc.Length; k++) {
+					if (Main.npc[k] == null) continue;
+					NPC npc = Main.npc[k];
+					if (!npc.active || npc.friendly || ((npc.townNPC || npc.lifeMax <= 3) && npc.damage <= 0)) {
 						continue;
 					}
-					if (proj.type == ModContent.ProjectileType<PsychedelicPrismMain>()) {
-						continue;
-					}
-					Rectangle targetHitbox = new((int) proj.position.X, (int) proj.position.Y, proj.width, proj.height);
-					if ((bool) Colliding3(projHitbox, targetHitbox)) {
-						if (Vector2.Distance(proj.position, player.MountedCenter) > 144) {
-							int size = proj.width * proj.height;
-							if (size <= 0) size = 1;
-							double scale = 32.0 / Math.Pow(size, 0.5);
-							proj.damage = (int) (proj.damage * Math.Pow(15.0 / 16, (1 - InnerBeamBrightnessMultiplier) * scale));
-							proj.timeLeft = (int) (proj.timeLeft * Math.Pow(15.0 / 16, (1 - InnerBeamBrightnessMultiplier) * scale));
-							proj.alpha = (int) (proj.alpha * Math.Pow(15.0 / 16, (1 - InnerBeamBrightnessMultiplier) * scale));
-							if (proj.penetrate < 0) proj.penetrate = 1;
-							if (size <= 1 || proj.damage <= 0 || proj.timeLeft <= 0) proj.penetrate = 0;
-							else if (size > 1) {
-								proj.scale *= (float) Math.Pow(31.0 / 32, (1 - InnerBeamBrightnessMultiplier));
-							}
-						}
-						else {
-							proj.owner = player.whoAmI;
-							proj.friendly = true;
-							proj.hostile = false;
-							proj.velocity = Vector2.Negate(proj.velocity);
-						}
-						if (proj.penetrate <= 0) {
-							if (spawned < 6) {
-								IEntitySource source = Projectile.GetSource_FromThis();
-								Vector2 targetpos = (proj.position - Projectile.position).Length() * Projectile.velocity + Projectile.position;
-								// Vector2 attenuated = new Vector2(player.position.X, player.position.Y);
-								SoundEngine.PlaySound(SoundID.Item33, targetpos);
-								for (int i = 0; i < (6 - spawned + 1) / 2; i++) {
-									double angle = Math.PI * Main.rand.Next(0, 360) / 180;
-									Vector2 polar = new Vector2((float) Math.Cos(angle), (float) Math.Sin(angle)) * 12f;
-									proj.SetDefaults(proj.type);
-									int[] choices = {9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955};
-									int pid = choices[Main.rand.Next(0, choices.Length)];
-									int dmg2 = proj.damage * proj.width * proj.height / 16 + 1;
-									if (pid == 79) polar *= 3f;
-									else if (pid == 538) polar /= 3f;
-									if (pid == 12 || pid == 538) dmg2 *= 3;
-									pid = Projectile.NewProjectile(source, targetpos + polar * 3f, polar, pid, dmg2, Projectile.knockBack * -2, player.whoAmI);
-									Projectile newproj = Main.projectile[pid];
-									newproj.active = true;
-									newproj.friendly = true;
-									newproj.hostile = false;
-									newproj.velocity = polar;
-									newproj.penetrate = Main.rand.Next(4, 11);
-									if (pid == 538) newproj.timeLeft = 240;
-									proj.Kill();
-									proj.penetrate = 0;
-									spawned++;
+					Rectangle targetHitbox = new((int) npc.position.X, (int) npc.position.Y, npc.width, npc.height);
+					if ((bool) Colliding2(projHitbox, targetHitbox)) {
+						if (InnerBeamBrightnessMultiplier <= 0 || !npc.dontTakeDamage) {
+							int dmg = 0;
+							if (!npc.boss) {
+								dmg = (int) ((Projectile.damage * (1 - InnerBeamBrightnessMultiplier) + 1) / 2);
+								if (dmg <= 1) dmg = Main.rand.Next(1, 10);
+								int def = npc.defense;
+								int origLife = npc.life;
+								if (dmg * 49132 <= npc.life) {
+									npc.defense = 0;
+									if (npc.immortal || npc.dontTakeDamage) {
+										NPC.HitInfo info = new() {
+											Crit = true,
+											DamageType = DamageClass.Summon,
+											Damage = dmg,
+										};
+										npc.StrikeNPC(info);
+									}
+									else {
+										player.ApplyDamageToNPC(npc, dmg, 0f, 0, true);
+									}
+									npc.defense = def;
+									dmg = origLife - npc.life;
 								}
 							}
+							OnHitNPC(npc, dmg, 0f, true);
 						}
-						else {
-							float knock = 131072f / (65536f + Vector2.DistanceSquared(Projectile.position, proj.position)) - 0.15f;
-							Vector2 mpos = Main.MouseWorld;
-							Vector2 vel;
-							if (Vector2.Distance(mpos, player.MountedCenter) < 80) {
-								vel = Vector2.Normalize(proj.position - player.MountedCenter);
+					}
+				}
+				if (InnerBeamBrightnessMultiplier < 1 && player.HeldItem.type == ModContent.ItemType<PsychedelicPrism>()) {
+					PsychedelicPrism prism = player.HeldItem.ModItem as PsychedelicPrism;
+					int spawned = 0;
+					if (prism.State != 3 || NoSpawnProjectile(512)) spawned = 6;
+					for (int k = 0; k < Main.projectile.Length; k++) {
+						if (Main.projectile[k] == null || Main.rand.NextBool()) continue;
+						Projectile proj = Main.projectile[k];
+						if (!proj.active || (proj.friendly && !proj.hostile)) {
+							continue;
+						}
+						if (proj.type == ModContent.ProjectileType<PsychedelicPrismMain>()) {
+							continue;
+						}
+						Rectangle targetHitbox = new((int) proj.position.X, (int) proj.position.Y, proj.width, proj.height);
+						if ((bool) Colliding3(projHitbox, targetHitbox)) {
+							if (Vector2.Distance(proj.position, player.MountedCenter) > 144) {
+								int size = proj.width * proj.height;
+								if (size <= 0) size = 1;
+								double scale = 32.0 / Math.Pow(size, 0.5);
+								proj.damage = (int) (proj.damage * Math.Pow(15.0 / 16, (1 - InnerBeamBrightnessMultiplier) * scale));
+								proj.timeLeft = (int) (proj.timeLeft * Math.Pow(15.0 / 16, (1 - InnerBeamBrightnessMultiplier) * scale));
+								proj.alpha = (int) (proj.alpha * Math.Pow(15.0 / 16, (1 - InnerBeamBrightnessMultiplier) * scale));
+								if (proj.penetrate < 0) proj.penetrate = 1;
+								if (size <= 1 || proj.damage <= 0 || proj.timeLeft <= 0) proj.penetrate = 0;
+								else if (size > 1) {
+									proj.scale *= (float) Math.Pow(31.0 / 32, (1 - InnerBeamBrightnessMultiplier));
+								}
 							}
 							else {
-								vel = Projectile.velocity;
+								proj.owner = player.whoAmI;
+								proj.friendly = true;
+								proj.hostile = false;
+								proj.velocity = Vector2.Negate(proj.velocity);
 							}
-							vel *= (1 - InnerBeamBrightnessMultiplier) * (Main.rand.NextFloat() + 1.5f) * knock * 2f;
-							proj.velocity *= 0.92f;
-							proj.velocity += vel;
-							proj.position += vel;
+							if (proj.penetrate <= 0) {
+								if (spawned < 6) {
+									IEntitySource source = Projectile.GetSource_FromThis();
+									Vector2 targetpos = (proj.position - Projectile.position).Length() * Projectile.velocity + Projectile.position;
+									// Vector2 attenuated = new Vector2(player.position.X, player.position.Y);
+									SoundEngine.PlaySound(SoundID.Item33, targetpos);
+									for (int i = 0; i < (6 - spawned + 1) / 2; i++) {
+										double angle = Math.PI * Main.rand.Next(0, 360) / 180;
+										Vector2 polar = new Vector2((float) Math.Cos(angle), (float) Math.Sin(angle)) * 12f;
+										proj.SetDefaults(proj.type);
+										int[] choices = {9, 16, 79, 92, 297, 462, 464, 538, 617, 634, 635, 709, 725, 728, 917, 931, 950, 955};
+										int pid = choices[Main.rand.Next(0, choices.Length)];
+										int dmg2 = proj.damage * proj.width * proj.height / 16 + 1;
+										if (pid == 79) polar *= 3f;
+										else if (pid == 538) polar /= 3f;
+										if (pid == 12 || pid == 538) dmg2 *= 3;
+										pid = Projectile.NewProjectile(source, targetpos + polar * 3f, polar, pid, dmg2, Projectile.knockBack * -2, player.whoAmI);
+										Projectile newproj = Main.projectile[pid];
+										newproj.active = true;
+										newproj.friendly = true;
+										newproj.hostile = false;
+										newproj.velocity = polar;
+										newproj.penetrate = Main.rand.Next(4, 11);
+										if (pid == 538) newproj.timeLeft = 240;
+										proj.Kill();
+										proj.penetrate = 0;
+										spawned++;
+									}
+								}
+							}
+							else {
+								float knock = 131072f / (65536f + Vector2.DistanceSquared(Projectile.position, proj.position)) - 0.15f;
+								Vector2 mpos = Main.MouseWorld;
+								Vector2 vel;
+								if (Vector2.Distance(mpos, player.MountedCenter) < 80) {
+									vel = Vector2.Normalize(proj.position - player.MountedCenter);
+								}
+								else {
+									vel = Projectile.velocity;
+								}
+								vel *= (1 - InnerBeamBrightnessMultiplier) * (Main.rand.NextFloat() + 1.5f) * knock * 2f;
+								proj.velocity *= 0.92f;
+								proj.velocity += vel;
+								proj.position += vel;
+							}
 						}
 					}
 				}
@@ -420,7 +437,7 @@ namespace Psychedelic_Prism.Projectiles
 			}
 
 			float chargeRatio = MathHelper.Clamp(hostPrism.ai[0] / PsychedelicPrismMain.MaxCharge, 0f, 1f);
-			float shortDist = ((float) Math.Pow(chargeRatio * 2, 2f)) * MaxBeamLength / 2 + 16f;
+			float shortDist = ((float) Math.Pow(chargeRatio * 2, 3f)) * MaxBeamLength / 4 + 16f;
 			if (shortDist > MaxBeamLength) shortDist = MaxBeamLength;
 			float[] laserScanResults = new float[NumSamplePoints];
 			Collision.LaserScan(samplingPoint, Projectile.velocity, BeamTileCollisionWidth * Projectile.scale, shortDist, laserScanResults);
@@ -655,7 +672,7 @@ namespace Psychedelic_Prism.Projectiles
 		public void OnHitNPC(NPC target, int damage, float knockback, bool crit) {
 			Player player = Main.player[Projectile.owner];
 			double dealt = damage;
-			double r1 = 524287.0 / 524288;
+			double r1 = 1048575.0 / 1048576;
 			double r2 = 1;
 			Projectile hostPrism = Main.projectile[HostPrismIndex];
 			float chargeRatio = MathHelper.Clamp(hostPrism.ai[0] / PsychedelicPrismMain.MaxCharge, 0f, 1f);
@@ -696,8 +713,8 @@ namespace Psychedelic_Prism.Projectiles
 						target.life = nextLife;
 					}
 				}
-				r1 = 262143.0 / 262144;
-				r2 = 2097151.0 / 2097152;
+				r1 = 524287.0 / 524288;
+				r2 = 8388607.0 / 8388608;
 				double lifeR = (target.life * Math.Pow(r1, (1 - InnerBeamBrightnessMultiplier) * DM));
 				if (lifeR % 1 > Main.rand.NextFloat()) lifeR += 1;
 				int life = (int) lifeR;
@@ -716,18 +733,25 @@ namespace Psychedelic_Prism.Projectiles
 			}
 			if (dmg <= 0) {
 				dmg = (target.life * (1 - Math.Pow(r1, DM)));
-				dmg += (target.lifeMax * (1 - Math.Pow(r2, DM)));
+				if (r2 < 1) {
+					dmg += (target.lifeMax * (1 - Math.Pow(r2, DM)));
+				}
 			}
-			dmg *= player.GetDamage(DamageClass.Magic).Multiplicative;
+			if (InnerBeamBrightnessMultiplier <= -1) dmg *= 6f;
+			PsychedelicPrism prismItem = player.HeldItem.ModItem as PsychedelicPrism;
+			if (prismItem.State == 3) dmg *= 2f;
+			dmg *= 1.0f + (player.GetDamage(DamageClass.Magic).Multiplicative - 1.0f) * 0.5f;
+			dmg *= 1.0f + (player.GetDamage(DamageClass.Summon).Multiplicative - 1.0f) * 0.5f;
 			if (player.luck > 0) {
 				dmg *= (1.0 + 2.0 * player.luck * Main.rand.NextFloat());
 			}
-			dmg *= 1.0f + player.GetCritChance(DamageClass.Magic);
+			dmg *= 1.0f + 2.0f * Main.rand.NextFloat() * player.GetCritChance(DamageClass.Magic);
 			// dmg *= (1.0 + 2.0 * mcrit / 100 * Main.rand.NextFloat());
-			if (dmg % 1 > Main.rand.NextFloat()) {
-				dmg += 1;
+			float n = Main.rand.NextFloat() * 10f;
+			if (dmg % 10f > n) {
+				dmg += 10f - n + 1f;
 			}
-			dmg = (int) dmg;
+			dmg = (int) dmg / 10f;
 			if (dmg < 1) return;
 			if (dmg > 2147483647) dmg = 2147483647;
 			int def = target.defense;
@@ -743,27 +767,28 @@ namespace Psychedelic_Prism.Projectiles
 			float dist2 = dist * dist + 32768f;
 			if (dist2 < 0) dist2 = 0;
 			float knock = 131072f / (dist2 + 32768f) - 0.25f;
+			if (InnerBeamBrightnessMultiplier <= -1) knock *= 6f;
 			if (target.immortal || target.dontTakeDamage || target.noTileCollide || dmg == 2147483647) {
-                NPC.HitInfo info = new() {
-                    Crit = true,
-                    DamageType = DamageClass.Magic,
-                    Damage = (int) dmg,
-                    Knockback = 0.4f * knock,
-                    HitDirection = dir,
-                };
-                dealt += target.StrikeNPC(info);
+				NPC.HitInfo info = new() {
+					Crit = false,
+					DamageType = DamageClass.Summon,
+					Damage = (int) dmg,
+					Knockback = 0.4f * knock,
+					HitDirection = dir,
+				};
+				dealt += target.StrikeNPC(info);
 			}
 			else {
 				player.ApplyDamageToNPC(target, (int) dmg, 0.5f * knock, dir, Main.rand.NextBool());
 			}
 			if (InnerBeamBrightnessMultiplier <= 0) {
 				if (dmg < 2147483647) dmg /= 2;
-                NPC.HitInfo info = new() {
-                    Crit = true,
-                    DamageType = DamageClass.Magic,
-                    Damage = (int) dmg,
-                };
-                int d2 = target.StrikeNPC(info);
+				NPC.HitInfo info = new() {
+					Crit = true,
+					DamageType = DamageClass.Magic,
+					Damage = (int) dmg,
+				};
+				int d2 = target.StrikeNPC(info);
 					dealt += d2;
 					if (d2 <= 2) {
 						d2 = (int) (dmg - d2);
@@ -793,8 +818,8 @@ namespace Psychedelic_Prism.Projectiles
 					target.position += vel;
 				}
 			}
-			target.value += 12.5f;
-			if (target.life <= 0 && !target.celled) {
+			target.value += 2.5f;
+			if (player.HeldItem.type == ModContent.ItemType<PsychedelicPrism>() && target.life <= 0 && !target.celled) {
 				target.celled = true;
 				target.value *= 4f;
 				if (target.type == 548 || target.type == 549) {
@@ -806,7 +831,8 @@ namespace Psychedelic_Prism.Projectiles
 						DD2Event.StartVictoryScene();
 					}
 				}
-				if (!NoSpawnProjectile(512)) {
+				PsychedelicPrism prism = player.HeldItem.ModItem as PsychedelicPrism;
+				if (prism.State == 3 && !NoSpawnProjectile(512)) {
 					IEntitySource source = Projectile.GetSource_FromThis();
 					Vector2 targetpos = (target.position - Projectile.position).Length() * Projectile.velocity + Projectile.position;
 					// Vector2 attenuated = new Vector2(player.position.X, player.position.Y);
@@ -833,21 +859,18 @@ namespace Psychedelic_Prism.Projectiles
 					target.immortal = false;
 					target.life = 0;
 					dealt = target.lifeMax;
-                    // target.lifeMax = 1;
-                    // target.aiStyle = 2;
-                    NPC.HitInfo info = new() {
-                        Crit = true,
-                        DamageType = DamageClass.Magic,
-                        Damage = (int) dealt,
-                    };
-                    target.StrikeNPC(info);
+					// target.lifeMax = 1;
+					// target.aiStyle = 2;
+					NPC.HitInfo info = new() {
+						Crit = true,
+						DamageType = DamageClass.Magic,
+						Damage = (int) dealt,
+					};
+					target.StrikeNPC(info);
 					target.NPCLoot();
 					target.damage = 0;
-					if (player.HeldItem.type == ModContent.ItemType<PsychedelicPrism>()) {
-						PsychedelicPrism prism = player.HeldItem.ModItem as PsychedelicPrism;
-						if (prism.NPCHealths[target.whoAmI] < 0) {
-							target.active = false;
-						}
+					if (prism.NPCHealths[target.whoAmI] < 0) {
+						target.active = false;
 					}
 				}
 				for (int i = 0; i < Buffs.Length; i++) {
@@ -889,7 +912,11 @@ namespace Psychedelic_Prism.Projectiles
 				if (dmg <= 0) dmg = 1;
 				target.Hurt(null, dmg, 0, true);
 			}
-			if (target.statLife <= 0) {
+			if (player.HeldItem.type != ModContent.ItemType<PsychedelicPrism>()) {
+				return;
+			}
+			PsychedelicPrism prism = player.HeldItem.ModItem as PsychedelicPrism;
+			if (prism.State == 3 && target.statLife <= 0) {
 				IEntitySource source = Projectile.GetSource_FromThis();
 				Vector2 targetpos = (target.position - Projectile.position).Length() * Projectile.velocity + Projectile.position;
 				// Vector2 attenuated = new Vector2(player.position.X, player.position.Y);

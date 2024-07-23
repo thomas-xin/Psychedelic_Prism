@@ -56,18 +56,18 @@ namespace Psychedelic_Prism.Items
 				.AddIngredient(1260, 1) // Rainbow Gun
 				.AddIngredient(495, 1) // Rainbow Rod
 				.AddIngredient(4952, 1) // Nightglow
+				.AddIngredient(5005, 1) // Terraprisma
 				.AddIngredient(5335, 1) // Rod of Harmony
 				.AddIngredient(50, 1) // Magic Mirror
-				.AddIngredient(5340, 1) // Galaxy Pearl
+				.AddIngredient(5340, 5) // Galaxy Pearl
 				.AddIngredient(5339, 100) // Arcane Crystal
 				.AddIngredient(3457, 100) // Nebula Fragment
 				.AddIngredient(502, 100) // Crystal Shard
 				.AddIngredient(181, 100) // Amethyst
-				.AddIngredient(3024, 4) // Skiph's Blood
 				.AddTile(26) // Altar
 				.AddTile(125) // Crystal Ball
-				.AddTile(356) // Enchanted Sundial
-				.AddTile(412) // Ancient Manipulator
+				.AddTile(356) // Enchanted Moondial
+				.AddTile(663) // Ancient Manipulator
 				.Register();
 		}
 
