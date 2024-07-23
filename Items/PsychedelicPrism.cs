@@ -66,8 +66,9 @@ namespace Psychedelic_Prism.Items
 				.AddIngredient(181, 100) // Amethyst
 				.AddTile(26) // Altar
 				.AddTile(125) // Crystal Ball
-				.AddTile(356) // Enchanted Moondial
-				.AddTile(663) // Ancient Manipulator
+				.AddTile(356) // Enchanted Sundial
+				.AddTile(663) // Enchanted Moondial
+				.AddTile(412) // Ancient Manipulator
 				.Register();
 		}
 
